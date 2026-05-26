@@ -1,0 +1,13 @@
+{
+  "name": "baby-outfit",
+  "private": true,
+  "workspaces": [
+    "packages/core",
+    "web"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w web",
+    "build": "npm run build -w web",
+    "lint": "npm run lint -w web"
+  }
+}
