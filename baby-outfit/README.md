@@ -2,24 +2,50 @@
 
 Web 端应用：根据天气和宝宝衣柜推荐今日穿搭。
 
+仓库地址：[github.com/ferrarizhu/babywarmrobot](https://github.com/ferrarizhu/babywarmrobot)
+
 ## 前置条件
 
-- Node.js 18+
-- Supabase 项目（001–005 migration 已执行）
+- **Node.js 18+**
+- **Docker Desktop**（用于本地 Supabase，[安装指南](https://docs.docker.com/get-docker/)）
+- 可选：**Supabase CLI**（一键脚本会自动安装）
 
-## 快速开始
+## 本地部署（推荐）
+
+### 方式一：一键脚本
+
+```bash
+cd baby-outfit
+chmod +x scripts/setup-local.sh
+./scripts/setup-local.sh
+npm run dev
+```
+
+脚本会自动：安装依赖 → 启动本地 Supabase → 执行 migration 与 demo 数据 → 生成 `web/.env.local`。
+
+### 方式二：手动步骤
 
 ```bash
 cd baby-outfit
 
-# 1. 配置环境变量
-cp web/.env.local.example web/.env.local
-# 编辑 web/.env.local，填入 Supabase URL 和 anon key
+# 1. 安装 Supabase CLI（如未安装）
+# macOS: brew install supabase/tap/supabase
+# Linux: 见 https://supabase.com/docs/guides/cli/getting-started
 
 # 2. 安装依赖
 npm install
 
-# 3. 启动开发服务器
+# 3. 启动本地 Supabase（需 Docker 已运行）
+supabase start
+supabase db reset
+
+# 4. 配置环境变量
+cp web/.env.local.example web/.env.local
+# 将 ANON_KEY 替换为 supabase status -o env 输出的值：
+# NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
+# NEXT_PUBLIC_SUPABASE_ANON_KEY=<ANON_KEY>
+
+# 5. 启动开发服务器
 npm run dev
 ```
 
@@ -29,6 +55,12 @@ npm run dev
 demo_user_1@baby-outfit.dev
 password123
 ```
+
+Supabase Studio（数据库管理界面）：http://127.0.0.1:54323
+
+### 使用云端 Supabase（可选）
+
+若不想在本地跑 Docker，可在 [supabase.com](https://supabase.com) 创建项目，在 SQL Editor 中依次执行 `supabase/migrations/` 下的 SQL 文件，然后在 `web/.env.local` 填入项目的 URL 和 anon key。
 
 ## 项目结构
 
