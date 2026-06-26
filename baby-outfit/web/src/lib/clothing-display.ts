@@ -1,4 +1,9 @@
 import type { ClothingCategory } from "@baby-outfit/core";
+import {
+  BOTTOMS_CATEGORIES,
+  OUTERWEAR_CATEGORIES,
+  TOPS_CATEGORIES,
+} from "@/lib/clothing-categories";
 
 export type WardrobeFilter = "all" | "tops" | "bottoms" | "outerwear";
 
@@ -10,10 +15,6 @@ export interface ClothingDisplayMeta {
   breathability?: Breathability | null;
   seasonTags?: string[] | null;
 }
-
-const TOPS: ClothingCategory[] = ["bodysuit", "inner", "mid", "sleepwear"];
-const BOTTOMS: ClothingCategory[] = ["pants"];
-const OUTERWEAR: ClothingCategory[] = ["outer"];
 
 export const WARDROBE_FILTERS: { id: WardrobeFilter; label: string }[] = [
   { id: "all", label: "全部" },
@@ -27,9 +28,9 @@ export function matchesWardrobeFilter(
   filter: WardrobeFilter
 ): boolean {
   if (filter === "all") return true;
-  if (filter === "tops") return TOPS.includes(category);
-  if (filter === "bottoms") return BOTTOMS.includes(category);
-  return OUTERWEAR.includes(category);
+  if (filter === "tops") return TOPS_CATEGORIES.includes(category);
+  if (filter === "bottoms") return BOTTOMS_CATEGORIES.includes(category);
+  return OUTERWEAR_CATEGORIES.includes(category);
 }
 
 export function seasonBadgeLabel(tags?: string[] | null): string | null {
@@ -69,14 +70,26 @@ export function breathabilityBadgeLabel(level: Breathability): string {
   return "适中";
 }
 
+const MOBILITY_CATEGORIES: ClothingCategory[] = [
+  "outer_shell",
+  "outer_down",
+  "outer_cotton",
+  "outer_rain_uv",
+  "sweater",
+  "fleece_top",
+  "pants_long",
+  "pants_short",
+  "pants_padded",
+];
+
 export function outfitSecondaryBadge(
   layerOrder: number,
   meta: ClothingDisplayMeta,
   activityLevel?: string
 ): { icon: string; label: string; tone: "tertiary" | "secondary" } {
-  const isOuter = layerOrder >= 3 || meta.category === "outer";
+  const isOuter = layerOrder >= 3 || OUTERWEAR_CATEGORIES.includes(meta.category);
   const isMobility =
-    isOuter || (activityLevel === "high" && ["outer", "mid", "pants"].includes(meta.category));
+    isOuter || (activityLevel === "high" && MOBILITY_CATEGORIES.includes(meta.category));
 
   if (isMobility && isOuter) {
     return { icon: "toys_and_games", label: "活动度", tone: "tertiary" };

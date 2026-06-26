@@ -12,27 +12,27 @@ export async function getWardrobePageData() {
   } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("display_name, city")
-    .eq("id", user.id)
-    .single<DbProfile>();
+  const [{ data: profile }, { data: babies }, { data: items }] = await Promise.all([
+    supabase
+      .from("profiles")
+      .select("display_name, city")
+      .eq("id", user.id)
+      .single<DbProfile>(),
+    supabase
+      .from("babies")
+      .select("id, name, is_active, avatar_url, gender")
+      .eq("user_id", user.id)
+      .order("is_active", { ascending: false })
+      .order("created_at", { ascending: true }),
+    supabase
+      .from("clothing_items")
+      .select(ITEM_SELECT)
+      .eq("user_id", user.id)
+      .is("deleted_at", null)
+      .order("created_at", { ascending: false }),
+  ]);
 
-  const { data: babies } = await supabase
-    .from("babies")
-    .select("id, name, is_active, avatar_url")
-    .eq("user_id", user.id)
-    .order("is_active", { ascending: false })
-    .order("created_at", { ascending: true });
-
-  const baby = babies?.[0] as Pick<DbBaby, "id" | "name" | "avatar_url"> | undefined;
-
-  const { data: items } = await supabase
-    .from("clothing_items")
-    .select(ITEM_SELECT)
-    .eq("user_id", user.id)
-    .is("deleted_at", null)
-    .order("created_at", { ascending: false });
+  const baby = babies?.[0] as Pick<DbBaby, "id" | "name" | "avatar_url" | "gender"> | undefined;
 
   return {
     profile,
@@ -48,39 +48,43 @@ export async function getAddPageData() {
   } = await supabase.auth.getUser();
   if (!user) return null;
 
-  const { data: babies } = await supabase
-    .from("babies")
-    .select("id, name, avatar_url")
-    .eq("user_id", user.id)
-    .order("is_active", { ascending: false })
-    .limit(1);
-
-  const { data: materials } = await supabase
-    .from("materials")
-    .select("id, code, name_zh")
-    .eq("is_active", true)
-    .order("sort_order", { ascending: true });
-
-  const { data: sizes } = await supabase
-    .from("size_labels")
-    .select("code, name_zh")
-    .eq("is_active", true)
-    .order("sort_order", { ascending: true });
-
-  const { data: categories } = await supabase
-    .from("categories")
-    .select("code, name_zh, layer_order")
-    .eq("is_active", true)
-    .order("sort_order", { ascending: true });
-
-  const { data: thicknesses } = await supabase
-    .from("thicknesses")
-    .select("code, name_zh")
-    .eq("is_active", true)
-    .order("sort_order", { ascending: true });
+  const [
+    { data: babies },
+    { data: materials },
+    { data: sizes },
+    { data: categories },
+    { data: thicknesses },
+  ] = await Promise.all([
+    supabase
+      .from("babies")
+      .select("id, name, avatar_url, gender")
+      .eq("user_id", user.id)
+      .order("is_active", { ascending: false })
+      .limit(1),
+    supabase
+      .from("materials")
+      .select("id, code, name_zh")
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true }),
+    supabase
+      .from("size_labels")
+      .select("code, name_zh")
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true }),
+    supabase
+      .from("categories")
+      .select("code, name_zh, layer_order")
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true }),
+    supabase
+      .from("thicknesses")
+      .select("code, name_zh")
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true }),
+  ]);
 
   return {
-    baby: babies?.[0] as Pick<DbBaby, "id" | "name" | "avatar_url"> | undefined,
+    baby: babies?.[0] as Pick<DbBaby, "id" | "name" | "avatar_url" | "gender"> | undefined,
     materials: ((materials ?? []) as { id: string; code: string; name_zh: string }[]).map(
       (m) => ({ id: m.id, code: m.code, name: m.name_zh })
     ) as DbMaterial[],

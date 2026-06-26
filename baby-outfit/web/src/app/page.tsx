@@ -3,11 +3,8 @@ import type { Scenario, Variant } from "@baby-outfit/core";
 import { getDashboardData } from "@/lib/dashboard";
 import { AppShell } from "@/components/stitch/app-shell";
 import { LiveWeatherSection } from "@/components/stitch/live-weather-section";
-import { OutfitCard } from "@/components/stitch/outfit-card";
-import { WhyThisWorks } from "@/components/stitch/why-this-works";
-import { SwapSetLink } from "@/components/stitch/swap-set-link";
+import { DashboardRecommendations } from "@/components/stitch/dashboard-recommendations";
 import { MaterialIcon } from "@/components/stitch/material-icon";
-import { pickDefaultRecommendation } from "@/lib/stitch-utils";
 import Link from "next/link";
 
 const SCENARIOS: Scenario[] = ["outdoor", "indoor", "sleep"];
@@ -30,19 +27,24 @@ export default async function HomePage({
   if (!data) redirect("/login");
 
   const { baby, profile, wardrobe, weather, weatherCity, recommendations, itemMeta } = data;
-  const recommendation =
-    recommendations.find((r) => r.variant === variant) ??
-    pickDefaultRecommendation(recommendations);
 
   return (
-    <AppShell babyName={baby?.name} avatarUrl={baby?.avatar_url}>
+    <AppShell babyName={baby?.name} avatarUrl={baby?.avatar_url} babyGender={baby?.gender}>
       <main className="mt-6 flex w-full max-w-[1200px] flex-col gap-[40px] px-margin-mobile md:px-margin-desktop">
         {!baby && (
-          <section className="rounded-xl border border-dashed border-outline-variant bg-surface-container-lowest p-8 text-center">
+          <section className="rounded-xl border border-dashed border-outline-variant bg-surface-container-lowest p-8 text-center cloud-shadow">
             <MaterialIcon name="child_care" className="mb-3 text-[48px] text-primary/40" />
-            <p className="font-body-md text-on-surface-variant">
-              还没有宝宝档案，请先在 Supabase 添加或检查 RLS 权限。
+            <h2 className="font-headline-md-mobile mb-2 text-on-surface">还没有宝宝档案</h2>
+            <p className="font-body-md mb-6 text-on-surface-variant">
+              添加宝宝信息后即可查看天气并根据衣柜推荐穿搭。
             </p>
+            <Link
+              href="/profile/add"
+              className="font-label-caps inline-flex min-h-touch-target-min items-center justify-center gap-2 rounded-full bg-primary px-8 text-on-primary shadow-sm transition-all hover:opacity-90 active:scale-95"
+            >
+              <MaterialIcon name="add" className="text-[20px]" />
+              添加宝宝
+            </Link>
           </section>
         )}
 
@@ -59,24 +61,13 @@ export default async function HomePage({
           </section>
         )}
 
-        {baby && weather && recommendation && recommendation.pieces.length > 0 && (
-          <section className="flex flex-col gap-6">
-            <div className="flex items-end justify-between">
-              <h2 className="font-headline-md-mobile text-on-background">今日推荐</h2>
-              <SwapSetLink currentVariant={recommendation.variant} scenario={scenario} />
-            </div>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              {recommendation.pieces.map((piece) => (
-                <OutfitCard
-                  key={piece.item.id}
-                  piece={piece}
-                  meta={itemMeta[piece.item.id]}
-                  activityLevel={baby.activity_level}
-                />
-              ))}
-            </div>
-            <WhyThisWorks reason={recommendation.reason} />
-          </section>
+        {baby && weather && recommendations.length > 0 && (
+          <DashboardRecommendations
+            recommendations={recommendations}
+            initialVariant={variant}
+            itemMeta={itemMeta}
+            activityLevel={baby.activity_level}
+          />
         )}
       </main>
     </AppShell>

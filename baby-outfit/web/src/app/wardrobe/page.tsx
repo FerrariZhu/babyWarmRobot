@@ -10,7 +10,12 @@ export default async function WardrobePage() {
   const { baby, items } = data;
 
   return (
-    <AppShell babyName={baby?.name} avatarUrl={baby?.avatar_url} headerVariant="centered">
+    <AppShell
+      babyName={baby?.name}
+      avatarUrl={baby?.avatar_url}
+      babyGender={baby?.gender}
+      headerVariant="centered"
+    >
       <main className="mt-4 flex w-full flex-grow flex-col gap-8 px-margin-mobile md:mx-auto md:max-w-[1200px] md:w-full">
         <WardrobeView items={items} />
       </main>

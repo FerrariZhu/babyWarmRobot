@@ -1,28 +1,28 @@
 import { MaterialIcon } from "./material-icon";
+import { resolveBabyAvatarUrl } from "@/lib/baby-profile";
+import type { BabyGender } from "@/lib/baby-profile";
 
 type HeaderVariant = "brand" | "centered";
 
 export function AppHeader({
   babyName,
   avatarUrl,
+  babyGender,
   variant = "brand",
   title = "LittleCompass",
 }: {
   babyName?: string;
   avatarUrl?: string | null;
+  babyGender?: BabyGender | string | null;
   variant?: HeaderVariant;
   title?: string;
 }) {
+  const avatarSrc = resolveBabyAvatarUrl(avatarUrl, babyGender);
+
   const avatar = (
     <div className="h-10 w-10 shrink-0 overflow-hidden rounded-full bg-surface-container-high">
-      {avatarUrl ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
-      ) : (
-        <div className="flex h-full w-full items-center justify-center bg-primary-container text-sm font-semibold text-on-primary-container">
-          {(babyName ?? "宝")[0]}
-        </div>
-      )}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={avatarSrc} alt="" className="h-full w-full object-cover" />
     </div>
   );
 

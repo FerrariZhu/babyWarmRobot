@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { WeatherResult } from "@baby-outfit/core";
 import { DeviceLocationError, getDeviceLocation } from "@/lib/device-location";
+import { usePullToRefresh } from "@/hooks/use-pull-to-refresh";
 import { WeatherWidget } from "@/components/stitch/weather-widget";
 import { MaterialIcon } from "@/components/stitch/material-icon";
 
@@ -136,10 +137,24 @@ export function LiveWeatherSection({
     autoSyncedRef.current = true;
     void syncFromDevice({
       background: Boolean(fallbackWeatherRef.current),
-      refreshPage: true,
+      refreshPage: false,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const handlePullRefresh = useCallback(
+    () =>
+      syncFromDevice({
+        background: true,
+        refreshPage: true,
+      }),
+    [syncFromDevice]
+  );
+
+  const { pullDistance, state: pullState, hint, isActive } = usePullToRefresh(
+    handlePullRefresh,
+    status === "ready"
+  );
 
   if (status === "locating") {
     return <WeatherWidgetSkeleton message="正在获取你的位置" />;
@@ -164,34 +179,47 @@ export function LiveWeatherSection({
   }
 
   return (
-    <div className="flex flex-col gap-3">
-      <WeatherWidget city={city} weather={weather} />
-      {isSyncing && (
-        <p className="font-label-caps text-center text-outline">正在更新当前位置天气…</p>
-      )}
-      {errorMessage && (
-        <div className="flex flex-col items-center gap-2 rounded-xl bg-surface-container-low px-4 py-3 text-center">
-          <p className="font-body-md text-on-surface-variant">{errorMessage}</p>
-          <button
-            type="button"
-            onClick={() => void syncFromDevice({ refreshPage: true })}
-            className="font-label-caps inline-flex items-center gap-1 text-primary hover:underline"
-          >
-            <MaterialIcon name="my_location" className="text-[16px]" />
-            使用当前位置
-          </button>
+    <>
+      {isActive && (
+        <div
+          className="pointer-events-none fixed inset-x-0 top-0 z-50 flex justify-center"
+          style={{ transform: `translateY(${Math.max(pullDistance, 0)}px)` }}
+          aria-live="polite"
+        >
+          <div className="mt-3 flex items-center gap-2 rounded-full bg-surface-container-lowest px-4 py-2 cloud-shadow">
+            <span
+              className={pullState === "refreshing" ? "inline-flex animate-spin" : "inline-flex"}
+              style={
+                pullState === "pulling"
+                  ? { transform: `rotate(${Math.min(pullDistance * 2.5, 180)}deg)` }
+                  : undefined
+              }
+            >
+              <MaterialIcon name="refresh" className="text-[18px] text-primary" />
+            </span>
+            <span className="font-label-caps text-on-surface-variant">{hint}</span>
+          </div>
         </div>
       )}
-      {!isSyncing && (
-        <button
-          type="button"
-          onClick={() => void syncFromDevice({ refreshPage: true })}
-          className="font-label-caps mx-auto inline-flex items-center gap-1 text-outline hover:text-primary"
-        >
-          <MaterialIcon name="refresh" className="text-[16px]" />
-          刷新定位与天气
-        </button>
-      )}
-    </div>
+      <div className="flex flex-col gap-3">
+        <WeatherWidget city={city} weather={weather} />
+        {isSyncing && (
+          <p className="font-label-caps text-center text-outline">正在更新当前位置天气…</p>
+        )}
+        {errorMessage && (
+          <div className="flex flex-col items-center gap-2 rounded-xl bg-surface-container-low px-4 py-3 text-center">
+            <p className="font-body-md text-on-surface-variant">{errorMessage}</p>
+            <button
+              type="button"
+              onClick={() => void syncFromDevice({ refreshPage: true })}
+              className="font-label-caps inline-flex items-center gap-1 text-primary hover:underline"
+            >
+              <MaterialIcon name="my_location" className="text-[16px]" />
+              使用当前位置
+            </button>
+          </div>
+        )}
+      </div>
+    </>
   );
 }

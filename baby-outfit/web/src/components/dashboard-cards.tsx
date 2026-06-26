@@ -1,5 +1,6 @@
 import type { RecommendResult } from "@baby-outfit/core";
-import { CATEGORY_LABELS, LAYER_LABELS } from "@/lib/db/types";
+import { LAYER_LABELS } from "@/lib/db/types";
+import { getCategoryLabel } from "@/lib/clothing-categories";
 
 export function WeatherCard({
   city,
@@ -77,7 +78,7 @@ export function RecommendationCard({ result }: { result: RecommendResult }) {
             <div className="min-w-0 flex-1">
               <p className="truncate font-medium">{item.name}</p>
               <p className="text-xs text-muted">
-                {LAYER_LABELS[layerOrder] ?? "配件"} · {CATEGORY_LABELS[item.category]} ·
+                {LAYER_LABELS[layerOrder] ?? "配件"} · {getCategoryLabel(item.category)} ·
                 保暖 {item.warmthScore}
                 {item.sizeLabel ? ` · ${item.sizeLabel}码` : ""}
               </p>

@@ -5,6 +5,7 @@ export function AppShell({
   children,
   babyName,
   avatarUrl,
+  babyGender,
   headerVariant = "brand",
   headerTitle,
   showNav = true,
@@ -12,6 +13,7 @@ export function AppShell({
   children: React.ReactNode;
   babyName?: string;
   avatarUrl?: string | null;
+  babyGender?: import("@/lib/baby-profile").BabyGender | string | null;
   headerVariant?: "brand" | "centered";
   headerTitle?: string;
   showNav?: boolean;
@@ -21,6 +23,7 @@ export function AppShell({
       <AppHeader
         babyName={babyName}
         avatarUrl={avatarUrl}
+        babyGender={babyGender}
         variant={headerVariant}
         title={headerTitle}
       />

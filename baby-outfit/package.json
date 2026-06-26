@@ -7,7 +7,9 @@
   ],
   "scripts": {
     "dev": "npm run dev -w web",
+    "dev:clean": "npm run clean -w web && npm run dev -w web",
     "build": "npm run build -w web",
-    "lint": "npm run lint -w web"
+    "clean": "npm run clean -w web",
+    "import:catalog": "npm run import:catalog -w web"
   }
 }

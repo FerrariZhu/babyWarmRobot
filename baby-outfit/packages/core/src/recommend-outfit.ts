@@ -8,12 +8,22 @@ import type {
 } from "./types";
 
 const LAYER_BY_CATEGORY: Record<ClothingCategory, number> = {
-  inner: 1,
-  bodysuit: 1,
-  pants: 1,
-  mid: 2,
-  outer: 3,
-  sleepwear: 1,
+  bodysuit_short: 1,
+  bodysuit_long: 1,
+  footed_romper: 1,
+  base_top: 1,
+  sweater: 2,
+  fleece_top: 2,
+  vest: 2,
+  pants_long: 1,
+  pants_short: 1,
+  pants_padded: 1,
+  outer_shell: 3,
+  outer_down: 3,
+  outer_cotton: 3,
+  outer_rain_uv: 3,
+  sleep_sack: 1,
+  pajamas: 1,
   hat: 0,
   socks: 0,
   gloves: 0,
@@ -21,7 +31,38 @@ const LAYER_BY_CATEGORY: Record<ClothingCategory, number> = {
   other: 0,
 };
 
-const CORE_CATEGORIES: ClothingCategory[] = ["bodysuit", "inner", "mid", "outer", "pants", "sleepwear"];
+const CORE_CATEGORIES: ClothingCategory[] = [
+  "bodysuit_short",
+  "bodysuit_long",
+  "footed_romper",
+  "base_top",
+  "sweater",
+  "fleece_top",
+  "vest",
+  "pants_long",
+  "pants_short",
+  "pants_padded",
+  "outer_shell",
+  "outer_down",
+  "outer_cotton",
+  "outer_rain_uv",
+  "pajamas",
+];
+
+const SLEEP_CATEGORIES: ClothingCategory[] = [
+  "sleep_sack",
+  "pajamas",
+  "bodysuit_long",
+  "footed_romper",
+];
+
+const OUTER_CATEGORIES: ClothingCategory[] = [
+  "outer_shell",
+  "outer_down",
+  "outer_cotton",
+  "outer_rain_uv",
+];
+
 const ACCESSORY_CATEGORIES: ClothingCategory[] = ["hat", "socks", "gloves", "scarf"];
 
 function filterWardrobe(wardrobe: WardrobeItem[], sizeLabel?: string | null): WardrobeItem[] {
@@ -81,7 +122,7 @@ export function recommendOutfit(input: RecommendInput): RecommendResult {
   const available = filterWardrobe(wardrobe, baby.currentSizeLabel);
   const corePool =
     scenario === "sleep"
-      ? available.filter((i) => i.category === "sleepwear" || i.category === "bodysuit")
+      ? available.filter((i) => SLEEP_CATEGORIES.includes(i.category))
       : available.filter((i) => CORE_CATEGORIES.includes(i.category));
 
   const picked: WardrobeItem[] = [];
@@ -96,7 +137,7 @@ export function recommendOutfit(input: RecommendInput): RecommendResult {
 
   if (scenario === "sleep") {
     const sleepItem = pickBest(
-      corePool.filter((i) => i.category === "sleepwear" || i.category === "bodysuit"),
+      corePool.filter((i) => SLEEP_CATEGORIES.includes(i.category)),
       requiredWarmth,
       picked
     );
@@ -142,11 +183,17 @@ export function recommendOutfit(input: RecommendInput): RecommendResult {
   }
 
   if (weather.windSpeed > 6 || weather.text.includes("雨")) {
-    const outer = available.find(
-      (i) => i.category === "outer" && !picked.some((p) => p.id === i.id)
+    const preferRain = weather.text.includes("雨");
+    const outerCandidates = available.filter(
+      (i) =>
+        OUTER_CATEGORIES.includes(i.category) && !picked.some((p) => p.id === i.id)
     );
-    if (outer && !picked.some((p) => p.id === outer.id)) {
-      const replaceIdx = picked.findIndex((i) => i.category === "outer");
+    const outer =
+      (preferRain
+        ? outerCandidates.find((i) => i.category === "outer_rain_uv")
+        : null) ?? outerCandidates[0];
+    if (outer) {
+      const replaceIdx = picked.findIndex((i) => OUTER_CATEGORIES.includes(i.category));
       if (replaceIdx >= 0) picked[replaceIdx] = outer;
       else picked.push(outer);
     }
@@ -159,7 +206,9 @@ export function recommendOutfit(input: RecommendInput): RecommendResult {
 
   const pieces = picked.map((item) => ({
     item,
-    layerOrder: LAYER_BY_CATEGORY[item.category] || (ACCESSORY_CATEGORIES.includes(item.category) ? 0 : 1),
+    layerOrder:
+      LAYER_BY_CATEGORY[item.category] ||
+      (ACCESSORY_CATEGORIES.includes(item.category) ? 0 : 1),
   }));
 
   pieces.sort((a, b) => b.layerOrder - a.layerOrder || b.item.warmthScore - a.item.warmthScore);

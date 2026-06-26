@@ -12,6 +12,7 @@ export default async function EditProfilePage() {
     <AppShell
       babyName={data.baby.name}
       avatarUrl={data.baby.avatar_url}
+      babyGender={data.baby.gender}
       headerVariant="centered"
       showNav={false}
     >
@@ -20,7 +21,7 @@ export default async function EditProfilePage() {
         <div className="absolute right-[-10%] bottom-[-10%] h-[50%] w-[50%] rounded-full bg-secondary-fixed-dim/10 blur-[120px]" />
       </div>
       <main className="relative z-10 mx-auto max-w-[768px] px-margin-mobile pt-8 pb-32 md:px-margin-desktop md:pt-12">
-        <EditBabyForm baby={data.baby} />
+        <EditBabyForm baby={data.baby} warmthPreference={data.warmthPreference} />
       </main>
     </AppShell>
   );

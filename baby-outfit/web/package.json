@@ -7,7 +7,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "clean": "rm -rf .next"
+    "clean": "rm -rf .next",
+    "import:catalog": "node scripts/import-taobao-catalog.mjs",
+    "db:clear": "node scripts/clear-dirty-data.mjs",
+    "db:migrate": "node scripts/apply-migration.mjs",
+    "db:ping": "node scripts/db-ping.mjs"
   },
   "dependencies": {
     "@baby-outfit/core": "*",
@@ -25,6 +29,7 @@
     "@types/react-dom": "^19.1.5",
     "eslint": "^9.27.0",
     "eslint-config-next": "^15.3.3",
+    "pg": "^8.21.0",
     "tailwindcss": "^4.1.8",
     "typescript": "^5.7.3"
   }

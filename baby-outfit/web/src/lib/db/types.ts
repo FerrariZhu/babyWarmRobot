@@ -1,4 +1,12 @@
 import type { ClothingCategory } from "@baby-outfit/core";
+import type { BabyGender, WarmthPreference } from "@/lib/baby-profile";
+import type { ClothingFitType } from "@/lib/clothing-weight";
+import {
+  CATEGORY_LABELS,
+  CATEGORY_OPTIONS,
+} from "@/lib/clothing-categories";
+
+export { CATEGORY_LABELS, CATEGORY_OPTIONS };
 
 export type Breathability = "low" | "medium" | "high";
 export type ThicknessLevel = "thin" | "medium" | "thick";
@@ -7,12 +15,14 @@ export interface DbBaby {
   id: string;
   name: string;
   birth_date: string;
+  gender?: BabyGender | "unknown" | null;
   activity_level: import("@baby-outfit/core").ActivityLevel;
   current_size_label: string | null;
   is_active: boolean;
   avatar_url?: string | null;
   height_cm?: number | null;
   weight_kg?: number | null;
+  warmth_preference?: WarmthPreference | null;
 }
 
 export interface DbClothingItem {
@@ -27,6 +37,7 @@ export interface DbClothingItem {
   thickness?: ThicknessLevel | null;
   material_id?: string | null;
   weight_grams?: number | null;
+  fit_type?: ClothingFitType | null;
   season_tags?: string[] | null;
   breathability?: Breathability | null;
 }
@@ -54,38 +65,14 @@ export interface DbCategory {
   code: string;
   label: string;
   layer_order: number;
+  group_code?: string | null;
+  group_name_zh?: string | null;
 }
 
 export interface DbThickness {
   code: ThicknessLevel;
   label: string;
 }
-
-export const CATEGORY_LABELS: Record<ClothingCategory, string> = {
-  bodysuit: "连体衣",
-  inner: "内层",
-  mid: "中层",
-  outer: "外层",
-  pants: "裤子",
-  sleepwear: "睡袋",
-  hat: "帽子",
-  socks: "袜子",
-  gloves: "手套",
-  scarf: "围巾",
-  other: "其他",
-};
-
-export const CATEGORY_OPTIONS: { value: ClothingCategory; label: string }[] = [
-  { value: "bodysuit", label: "Onesie / Bodysuit" },
-  { value: "sleepwear", label: "Sleep Sack" },
-  { value: "pants", label: "Pants / Leggings" },
-  { value: "mid", label: "Sweater / Cardigan" },
-  { value: "outer", label: "Outerwear" },
-  { value: "inner", label: "Base Layer" },
-  { value: "hat", label: "Hat" },
-  { value: "socks", label: "Socks" },
-  { value: "other", label: "Other" },
-];
 
 export const THICKNESS_OPTIONS: { value: ThicknessLevel; label: string }[] = [
   { value: "thin", label: "Thin" },

@@ -1,0 +1,11 @@
+{
+  "name": "brd",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "pptx": "node generate-pptx.mjs"
+  },
+  "dependencies": {
+    "pptxgenjs": "^3.12.0"
+  }
+}

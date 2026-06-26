@@ -4,34 +4,34 @@ import { getProfilePageData } from "@/lib/profile";
 import { AppShell } from "@/components/stitch/app-shell";
 import { MaterialIcon } from "@/components/stitch/material-icon";
 import { SignOutButton } from "@/components/sign-out-button";
-import { formatBabyAge, warmthSensitivityLabel } from "@/lib/clothing-display";
+import { formatBabyAge } from "@/lib/clothing-display";
+import { genderLabel, resolveBabyAvatarUrl, warmthPreferenceLabel } from "@/lib/baby-profile";
 
 export default async function ProfilePage() {
   const data = await getProfilePageData();
   if (!data) redirect("/login");
 
-  const { baby, warmthOffset, wardrobeCount, topCategoryLabel } = data;
+  const { baby, warmthPreference, wardrobeCount, topCategoryLabel } = data;
 
   return (
-    <AppShell babyName={baby?.name} avatarUrl={baby?.avatar_url} headerVariant="centered">
+    <AppShell babyName={baby?.name} avatarUrl={baby?.avatar_url} babyGender={baby?.gender} headerVariant="centered">
       <main className="mx-auto flex w-full max-w-lg flex-1 flex-col gap-8 overflow-y-auto px-margin-mobile pt-2 pb-32">
         {baby ? (
           <>
             <section className="relative flex flex-col items-center overflow-hidden rounded-xl bg-surface-container-lowest p-6 cloud-shadow">
               <div className="pointer-events-none absolute -top-10 -right-10 h-40 w-40 rounded-full bg-primary-fixed opacity-30 blur-2xl" />
               <div className="z-10 mb-4 h-24 w-24 overflow-hidden rounded-full border-4 border-surface-container-lowest shadow-sm">
-                {baby.avatar_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={baby.avatar_url} alt={baby.name} className="h-full w-full object-cover" />
-                ) : (
-                  <div className="flex h-full w-full items-center justify-center bg-primary-container text-2xl font-semibold text-on-primary-container">
-                    {baby.name[0]}
-                  </div>
-                )}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={resolveBabyAvatarUrl(baby.avatar_url, baby.gender)}
+                  alt={baby.name}
+                  className="h-full w-full object-cover"
+                />
               </div>
               <h2 className="font-display-lg-mobile z-10 mb-1 text-on-surface">{baby.name}</h2>
               <p className="font-body-lg z-10 mb-6 text-on-surface-variant">
                 {formatBabyAge(baby.birth_date)}
+                {baby.gender ? ` · ${genderLabel(baby.gender)}` : ""}
               </p>
               <div className="z-10 flex w-full gap-3">
                 <StatTile
@@ -75,7 +75,15 @@ export default async function ProfilePage() {
           </>
         ) : (
           <section className="rounded-xl bg-surface-container-lowest p-8 text-center cloud-shadow">
-            <p className="font-body-md text-on-surface-variant">暂无宝宝档案</p>
+            <MaterialIcon name="child_care" className="mb-3 text-[40px] text-primary/40" />
+            <p className="font-body-md mb-4 text-on-surface-variant">暂无宝宝档案</p>
+            <Link
+              href="/profile/add"
+              className="font-label-caps inline-flex min-h-touch-target-min items-center justify-center gap-2 rounded-full bg-primary px-6 text-on-primary"
+            >
+              <MaterialIcon name="add" className="text-[18px]" />
+              添加宝宝
+            </Link>
           </section>
         )}
 
@@ -83,16 +91,16 @@ export default async function ProfilePage() {
           <h3 className="font-headline-md-mobile mb-4 text-on-surface">设置</h3>
           <div className="flex flex-col gap-2">
             <SettingsLink
-              href="/profile/edit"
-              icon="edit"
+              href={baby ? "/profile/edit" : "/profile/add"}
+              icon={baby ? "edit" : "add"}
               iconClass="bg-secondary-fixed text-on-secondary-fixed"
-              label="编辑资料"
+              label={baby ? "编辑资料" : "添加宝宝"}
             />
             <SettingsRow
               icon="thermostat"
               iconClass="bg-tertiary-container text-on-tertiary-container"
               label="偏好设置"
-              subtitle={warmthSensitivityLabel(warmthOffset)}
+              subtitle={warmthPreferenceLabel(warmthPreference)}
             />
             <SettingsRow
               icon="help"

@@ -1,5 +1,17 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import {
+  parseTaobaoProductUrl,
+  splitPastedProductInput,
+  detectProductPlatform,
+} from "@/lib/taobao-product-parser";
+import {
+  getDefaultMaterialId,
+  recordParseJob,
+  resolveMaterialId,
+  toApiParseResponse,
+  type ProductParsePayload,
+} from "@/lib/product-parse-response";
 
 function guessNameFromUrl(url: string): string {
   try {
@@ -20,46 +32,55 @@ export async function POST(request: Request) {
   } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { source_url } = await request.json();
-  if (!source_url || typeof source_url !== "string") {
+  const body = (await request.json()) as {
+    source_url?: string;
+    title_hint?: string | null;
+  };
+
+  const rawInput = body.source_url?.trim();
+  if (!rawInput) {
     return NextResponse.json({ error: "Invalid URL" }, { status: 400 });
   }
 
-  const { data: materials } = await supabase
-    .from("materials")
-    .select("id, code")
-    .eq("is_active", true)
-    .limit(1);
+  const { sourceUrl, titleHint: shareTitle } = splitPastedProductInput(rawInput);
+  const titleHint = body.title_hint?.trim() || shareTitle;
+  const platform = detectProductPlatform(sourceUrl);
 
-  const materialId = materials?.[0]?.id;
-  const name = guessNameFromUrl(source_url.trim());
+  let parsed: Awaited<ReturnType<typeof parseTaobaoProductUrl>> | null = null;
 
-  const { data: job, error: jobError } = await supabase
-    .from("url_parse_jobs")
-    .insert({
-      user_id: user.id,
-      source_url: source_url.trim(),
-      status: "completed",
-      result: { name, category: "bodysuit", material_id: materialId },
-      completed_at: new Date().toISOString(),
-    })
-    .select("id, result")
-    .single();
-
-  if (jobError) {
-    return NextResponse.json({ error: jobError.message }, { status: 500 });
+  if (platform === "taobao" || platform === "tmall") {
+    parsed = await parseTaobaoProductUrl(sourceUrl, titleHint);
   }
 
-  const result = (job.result ?? {}) as {
-    name?: string;
-    category?: string;
-    material_id?: string;
+  const defaultMaterialId = await getDefaultMaterialId(supabase);
+  const name = parsed?.name ?? guessNameFromUrl(sourceUrl);
+  const materialId =
+    (parsed?.materialHint
+      ? await resolveMaterialId(supabase, parsed.materialHint)
+      : undefined) ?? defaultMaterialId;
+
+  const result: ProductParsePayload = {
+    name,
+    category: parsed?.category ?? "bodysuit_long",
+    material_id: materialId,
+    thickness: parsed?.thickness ?? "medium",
+    size_label: parsed?.sizeLabel ?? null,
+    image_url: parsed?.imageUrl ?? null,
+    price_text: parsed?.priceText ?? null,
+    platform: parsed?.platform ?? platform,
+    item_id: parsed?.itemId ?? null,
+    canonical_url: parsed?.canonicalUrl ?? sourceUrl,
+    source: parsed?.source ?? "fallback",
+    warnings: parsed?.warnings ?? [],
+    material_hint: parsed?.materialHint ?? null,
   };
 
-  return NextResponse.json({
-    job_id: job.id,
-    name: result.name ?? name,
-    category: result.category ?? "bodysuit",
-    material_id: result.material_id ?? materialId,
-  });
+  const job = await recordParseJob(
+    supabase,
+    user.id,
+    parsed?.canonicalUrl ?? sourceUrl,
+    result
+  );
+
+  return NextResponse.json(toApiParseResponse(result, job?.id ?? null));
 }

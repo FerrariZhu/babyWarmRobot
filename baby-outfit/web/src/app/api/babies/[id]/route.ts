@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { isBabyGender, isWarmthPreference } from "@/lib/baby-profile";
 
 export async function PATCH(
   request: Request,
@@ -17,29 +18,89 @@ export async function PATCH(
 
   if (body.name !== undefined) updates.name = String(body.name).trim();
   if (body.birth_date !== undefined) updates.birth_date = body.birth_date;
+  if (body.gender !== undefined) {
+    if (!isBabyGender(String(body.gender))) {
+      return NextResponse.json({ error: "无效的性别" }, { status: 400 });
+    }
+    updates.gender = body.gender;
+  }
   if (body.height_cm !== undefined) {
-    updates.height_cm = body.height_cm === "" || body.height_cm == null ? null : Number(body.height_cm);
+    const heightCm = Number(body.height_cm);
+    if (!Number.isFinite(heightCm) || heightCm <= 0) {
+      return NextResponse.json({ error: "请输入有效身高" }, { status: 400 });
+    }
+    updates.height_cm = heightCm;
   }
   if (body.weight_kg !== undefined) {
-    updates.weight_kg = body.weight_kg === "" || body.weight_kg == null ? null : Number(body.weight_kg);
+    const weightKg = Number(body.weight_kg);
+    if (!Number.isFinite(weightKg) || weightKg <= 0) {
+      return NextResponse.json({ error: "请输入有效体重" }, { status: 400 });
+    }
+    updates.weight_kg = weightKg;
   }
   if (body.avatar_url !== undefined) updates.avatar_url = body.avatar_url;
 
-  if (Object.keys(updates).length === 0) {
+  const hasBabyUpdates = Object.keys(updates).length > 0;
+  const warmthPreference =
+    body.warmth_preference !== undefined ? String(body.warmth_preference) : null;
+
+  if (!hasBabyUpdates && warmthPreference == null) {
     return NextResponse.json({ error: "No fields to update" }, { status: 400 });
+  }
+
+  if (warmthPreference != null && !isWarmthPreference(warmthPreference)) {
+    return NextResponse.json({ error: "无效的温度偏好" }, { status: 400 });
+  }
+
+  if (hasBabyUpdates) {
+    const { error } = await supabase
+      .from("babies")
+      .update(updates)
+      .eq("id", id)
+      .eq("user_id", user.id);
+
+    if (error) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+  }
+
+  if (warmthPreference != null) {
+    const { data: existing } = await supabase
+      .from("baby_warmth_preferences")
+      .select("baby_id")
+      .eq("baby_id", id)
+      .maybeSingle();
+
+    const prefPayload = { warmth_preference: warmthPreference };
+    const { error: prefError } = existing
+      ? await supabase.from("baby_warmth_preferences").update(prefPayload).eq("baby_id", id)
+      : await supabase.from("baby_warmth_preferences").insert({ baby_id: id, ...prefPayload });
+
+    if (prefError) {
+      return NextResponse.json({ error: prefError.message }, { status: 500 });
+    }
   }
 
   const { data, error } = await supabase
     .from("babies")
-    .update(updates)
+    .select("id, name, birth_date, gender, avatar_url, height_cm, weight_kg")
     .eq("id", id)
     .eq("user_id", user.id)
-    .select("id, name, birth_date, avatar_url, height_cm, weight_kg")
     .single();
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json(data);
+  let resolvedPreference = warmthPreference;
+  if (resolvedPreference == null) {
+    const { data: pref } = await supabase
+      .from("baby_warmth_preferences")
+      .select("warmth_preference")
+      .eq("baby_id", id)
+      .maybeSingle();
+    resolvedPreference = pref?.warmth_preference ?? "neutral";
+  }
+
+  return NextResponse.json({ ...data, warmth_preference: resolvedPreference });
 }

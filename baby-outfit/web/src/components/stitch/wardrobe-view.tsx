@@ -147,9 +147,9 @@ function FavoriteButton({ itemId, initial }: { itemId: string; initial: boolean 
 
   async function toggle() {
     if (loading) return;
-    setLoading(true);
     const next = !favorite;
     setFavorite(next);
+    setLoading(true);
     try {
       await fetch(`/api/clothing/${itemId}/favorite`, {
         method: "PATCH",

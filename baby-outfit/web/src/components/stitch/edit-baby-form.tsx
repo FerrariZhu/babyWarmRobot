@@ -4,17 +4,36 @@ import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import type { DbBaby } from "@/lib/db/types";
 import { MaterialIcon } from "@/components/stitch/material-icon";
+import { BabyBirthDateField } from "@/components/stitch/baby-birth-date-field";
+import { OptionChips } from "@/components/stitch/option-chips";
+import {
+  GENDER_OPTIONS,
+  WARMTH_PREFERENCE_OPTIONS,
+  resolveBabyAvatarUrl,
+  type BabyGender,
+  type WarmthPreference,
+} from "@/lib/baby-profile";
 
-export function EditBabyForm({ baby }: { baby: DbBaby }) {
+export function EditBabyForm({
+  baby,
+  warmthPreference: initialWarmthPreference = "neutral",
+}: {
+  baby: DbBaby;
+  warmthPreference?: WarmthPreference;
+}) {
   const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
   const [name, setName] = useState(baby.name);
+  const [gender, setGender] = useState<BabyGender>(baby.gender === "female" ? "female" : "male");
   const [birthDate, setBirthDate] = useState(baby.birth_date);
   const [heightCm, setHeightCm] = useState(
     baby.height_cm != null ? String(Math.round(Number(baby.height_cm))) : ""
   );
   const [weightKg, setWeightKg] = useState(
     baby.weight_kg != null ? String(Number(baby.weight_kg)) : ""
+  );
+  const [warmthPreference, setWarmthPreference] = useState<WarmthPreference>(
+    initialWarmthPreference
   );
   const [avatarUrl, setAvatarUrl] = useState(baby.avatar_url ?? "");
   const [saving, setSaving] = useState(false);
@@ -26,6 +45,18 @@ export function EditBabyForm({ baby }: { baby: DbBaby }) {
       setError("请输入宝宝名字");
       return;
     }
+    if (!birthDate) {
+      setError("请选择生日");
+      return;
+    }
+    if (!heightCm || Number(heightCm) <= 0) {
+      setError("请输入有效身高");
+      return;
+    }
+    if (!weightKg || Number(weightKg) <= 0) {
+      setError("请输入有效体重");
+      return;
+    }
     setSaving(true);
     setError(null);
     try {
@@ -34,9 +65,11 @@ export function EditBabyForm({ baby }: { baby: DbBaby }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: name.trim(),
+          gender,
           birth_date: birthDate,
-          height_cm: heightCm ? Number(heightCm) : null,
-          weight_kg: weightKg ? Number(weightKg) : null,
+          height_cm: Number(heightCm),
+          weight_kg: Number(weightKg),
+          warmth_preference: warmthPreference,
           avatar_url: avatarUrl || null,
         }),
       });
@@ -84,9 +117,12 @@ export function EditBabyForm({ baby }: { baby: DbBaby }) {
                   className="h-full w-full object-cover transition-opacity duration-300 group-hover:opacity-70"
                 />
               ) : (
-                <div className="flex h-full w-full items-center justify-center bg-primary-container text-3xl font-semibold text-on-primary-container">
-                  {name[0] ?? "宝"}
-                </div>
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={resolveBabyAvatarUrl(null, gender)}
+                  alt={name}
+                  className="h-full w-full object-cover"
+                />
               )}
               <div className="absolute inset-0 flex items-center justify-center bg-black/10 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
                 <MaterialIcon name="photo_camera" filled className="text-[36px] text-white drop-shadow-md" />
@@ -116,29 +152,18 @@ export function EditBabyForm({ baby }: { baby: DbBaby }) {
             />
           </div>
 
-          <div className="flex cursor-pointer items-center justify-between rounded-2xl border border-surface-variant bg-surface-container-lowest p-4 shadow-[0_2px_12px_rgba(62,102,88,0.03)] transition-all focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
-            <div className="flex-1">
-              <label className="font-label-caps mb-1.5 block uppercase tracking-wider text-outline" htmlFor="baby_dob">
-                生日
-              </label>
-              <input
-                id="baby_dob"
-                type="date"
-                className="font-body-lg w-full cursor-pointer appearance-none border-none bg-transparent p-0 text-on-background outline-none focus:ring-0"
-                value={birthDate}
-                onChange={(e) => setBirthDate(e.target.value)}
-                required
-              />
-            </div>
-            <div className="ml-4 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-container-low text-primary">
-              <MaterialIcon name="calendar_today" className="text-[20px]" />
-            </div>
-          </div>
+          <OptionChips<BabyGender>
+            label="性别"
+            value={gender}
+            options={GENDER_OPTIONS}
+            onChange={setGender}
+          />
+
+          <BabyBirthDateField value={birthDate} onChange={setBirthDate} />
         </div>
 
         <div className="mt-8 grid grid-cols-2 gap-4 md:gap-6">
           <div className="group relative overflow-hidden rounded-3xl border border-surface-variant bg-surface-container-lowest p-5 shadow-[0_4px_16px_rgba(62,102,88,0.04)] transition-all focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/20">
-            <div className="absolute -top-4 -right-4 h-16 w-16 rounded-bl-full bg-primary-container/30 transition-transform group-hover:scale-110" />
             <label className="font-label-caps relative z-10 mb-2 block uppercase tracking-wider text-outline" htmlFor="baby_height">
               身高
             </label>
@@ -151,6 +176,7 @@ export function EditBabyForm({ baby }: { baby: DbBaby }) {
                 placeholder="00"
                 value={heightCm}
                 onChange={(e) => setHeightCm(e.target.value)}
+                required
               />
               <span className="font-body-md font-medium text-outline">cm</span>
             </div>
@@ -158,7 +184,6 @@ export function EditBabyForm({ baby }: { baby: DbBaby }) {
           </div>
 
           <div className="group relative overflow-hidden rounded-3xl border border-surface-variant bg-surface-container-lowest p-5 shadow-[0_4px_16px_rgba(62,102,88,0.04)] transition-all focus-within:border-secondary focus-within:ring-2 focus-within:ring-secondary/20">
-            <div className="absolute -top-4 -right-4 h-16 w-16 rounded-bl-full bg-secondary-container/30 transition-transform group-hover:scale-110" />
             <label className="font-label-caps relative z-10 mb-2 block uppercase tracking-wider text-outline" htmlFor="baby_weight">
               体重
             </label>
@@ -172,12 +197,20 @@ export function EditBabyForm({ baby }: { baby: DbBaby }) {
                 placeholder="0.0"
                 value={weightKg}
                 onChange={(e) => setWeightKg(e.target.value)}
+                required
               />
               <span className="font-body-md font-medium text-outline">kg</span>
             </div>
             <MaterialIcon name="scale" className="pointer-events-none absolute right-4 bottom-4 text-[24px] text-outline-variant opacity-50" />
           </div>
         </div>
+
+        <OptionChips<WarmthPreference>
+          label="温度偏好"
+          value={warmthPreference}
+          options={WARMTH_PREFERENCE_OPTIONS}
+          onChange={setWarmthPreference}
+        />
 
         {error && (
           <p className="rounded-xl bg-secondary-fixed px-4 py-3 font-body-md text-on-secondary-fixed">{error}</p>

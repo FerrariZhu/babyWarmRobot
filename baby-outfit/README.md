@@ -5,7 +5,7 @@ Web 端应用：根据天气和宝宝衣柜推荐今日穿搭。
 ## 前置条件
 
 - Node.js 18+
-- Supabase 项目（001–005 migration 已执行）
+- Supabase 项目（001–006 migration 已执行；商品目录需 007）
 
 ## 快速开始
 
@@ -47,7 +47,17 @@ baby-outfit/
 - [x] 三套推荐（标准 / 偏暖 / 偏凉）
 - [x] 室内 / 外出 / 睡眠场景切换
 
-## 下一步
+## 批量导入淘宝/天猫商品目录
+
+1. 在 Supabase SQL Editor 执行 `supabase/migrations/007_product_catalog.sql`
+2. （可选）在 `web/.env.local` 配置 `SUPABASE_DB_URL` 以便脚本自动跑 migration
+3. 运行：
+
+```bash
+npm run import:catalog -w web
+```
+
+OneBound 配额用尽时会先写入链接与 item_id；配额恢复后重跑即可补全详情。
 
 - 衣柜 CRUD 页面
 - 反馈（太冷/刚好/太热）写入数据库

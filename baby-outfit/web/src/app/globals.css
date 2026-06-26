@@ -100,6 +100,11 @@ body {
   transform: translateY(1px);
 }
 
+a,
+button {
+  touch-action: manipulation;
+}
+
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -165,6 +170,165 @@ body {
   padding-right: var(--spacing-margin-desktop);
 }
 
+/* Full-screen category picker — explicit layout (not reliant on Tailwind flex) */
+.category-picker-screen {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--color-background);
+  color: var(--color-on-background);
+}
+
+.category-picker-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  border-bottom: 1px solid var(--color-surface-container-high);
+  background: var(--color-background);
+  padding: 16px var(--spacing-margin-mobile);
+}
+
+.category-picker-back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 9999px;
+  background: transparent;
+  color: var(--color-on-surface-variant);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.category-picker-back:hover {
+  background: var(--color-surface-container-low);
+}
+
+.category-picker-title {
+  flex: 1;
+  margin: 0;
+  text-align: center;
+  font-family: var(--font-display);
+  font-size: 18px;
+  line-height: 24px;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.category-picker-header-spacer {
+  width: 40px;
+  flex-shrink: 0;
+}
+
+.category-picker-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  max-width: 28rem;
+  margin: 0 auto;
+}
+
+.category-picker-groups {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  width: 108px;
+  overflow-y: auto;
+  border-right: 1px solid var(--color-surface-container-high);
+  background: var(--color-surface-container-low);
+}
+
+.category-picker-group-btn {
+  position: relative;
+  display: block;
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 16px 12px;
+  text-align: left;
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 20px;
+  color: var(--color-on-surface-variant);
+  cursor: pointer;
+}
+
+.category-picker-group-btn:hover {
+  background: var(--color-surface-container-lowest);
+}
+
+.category-picker-group-btn.is-active {
+  background: var(--color-primary-container);
+  color: var(--color-on-primary-container);
+  font-weight: 600;
+}
+
+.category-picker-group-btn.is-active::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 4px;
+  height: 32px;
+  transform: translateY(-50%);
+  border-radius: 0 4px 4px 0;
+  background: var(--color-primary);
+}
+
+.category-picker-items {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  padding: 12px 16px;
+}
+
+.category-picker-item-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: var(--spacing-touch-target-min);
+  margin-bottom: 8px;
+  border: 1px solid var(--color-surface-container-high);
+  border-radius: 1rem;
+  background: var(--color-surface-container-lowest);
+  padding: 12px 16px;
+  text-align: left;
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 24px;
+  color: var(--color-on-background);
+  cursor: pointer;
+}
+
+.category-picker-item-btn:hover {
+  border-color: color-mix(in srgb, var(--color-primary) 40%, transparent);
+}
+
+.category-picker-item-btn.is-selected {
+  border-color: var(--color-primary);
+  background: var(--color-primary-container);
+  color: var(--color-on-primary-container);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 8%);
+}
+
+.category-picker-check {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: var(--color-primary);
+}
+
 .gap-gutter {
   gap: var(--spacing-gutter);
 }
@@ -213,4 +377,16 @@ body {
   to {
     transform: rotate(360deg);
   }
+}
+
+/* Hide native date picker icon; forms use a custom calendar button */
+.date-input-field::-webkit-calendar-picker-indicator {
+  opacity: 0;
+  display: none;
+  -webkit-appearance: none;
+}
+
+.date-input-field::-webkit-inner-spin-button,
+.date-input-field::-webkit-clear-button {
+  display: none;
 }
