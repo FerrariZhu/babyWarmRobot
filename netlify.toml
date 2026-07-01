@@ -3,6 +3,7 @@
 [build]
   base = "baby-outfit/web"
   command = "cd .. && npm ci && npm run build -w web"
+  publish = ".next"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
