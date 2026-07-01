@@ -1,0 +1,11 @@
+# Next.js app lives in baby-outfit/web (npm workspaces monorepo).
+# Install deps from baby-outfit/, build the web workspace, deploy via OpenNext runtime.
+[build]
+  base = "baby-outfit/web"
+  command = "cd .. && npm ci && npm run build -w web"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+[build.environment]
+  NODE_VERSION = "20"
