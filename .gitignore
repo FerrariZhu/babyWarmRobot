@@ -4,3 +4,10 @@ node_modules/
 .env*.local
 .DS_Store
 *.log
+
+# 非应用代码（本地保留，不提交）
+brd/
+Stitch - Projects.html
+Stitch - Projects_files/
+dev:clean
+npm
