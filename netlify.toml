@@ -1,7 +1,7 @@
-# Next.js app lives in baby-outfit/web (npm workspaces monorepo).
-# Install deps from baby-outfit/, build the web workspace, deploy via OpenNext runtime.
+# Next.js app lives in warmrobot/web (npm workspaces monorepo).
+# Install deps from warmrobot/, build the web workspace, deploy via OpenNext runtime.
 [build]
-  base = "baby-outfit/web"
+  base = "warmrobot/web"
   command = "cd .. && npm ci && npm run build -w web"
   publish = ".next"
 

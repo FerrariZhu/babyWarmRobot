@@ -1,0 +1,17 @@
+{
+  "name": "warmrobot",
+  "private": true,
+  "workspaces": [
+    "packages/core",
+    "web"
+  ],
+  "scripts": {
+    "dev": "npm run dev -w web",
+    "dev:clean": "npm run dev:clean -w web",
+    "build": "npm run build -w web",
+    "clean": "npm run clean -w web",
+    "lint": "npm run lint -w web",
+    "verify": "npm run lint && npm run typecheck -w packages/core && npx tsc --noEmit -p web/tsconfig.json && npm run build",
+    "import:catalog": "npm run import:catalog -w web"
+  }
+}

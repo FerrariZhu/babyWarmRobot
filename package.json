@@ -1,11 +1,11 @@
 {
-  "name": "babywarmrobot",
+  "name": "warmrobot",
   "private": true,
   "scripts": {
-    "dev": "npm run dev --prefix baby-outfit",
-    "dev:clean": "npm run dev:clean --prefix baby-outfit",
-    "build": "npm run build --prefix baby-outfit",
-    "clean": "npm run clean --prefix baby-outfit",
-    "import:catalog": "npm run import:catalog --prefix baby-outfit"
+    "dev": "npm run dev --prefix warmrobot",
+    "dev:clean": "npm run dev:clean --prefix warmrobot",
+    "build": "npm run build --prefix warmrobot",
+    "clean": "npm run clean --prefix warmrobot",
+    "import:catalog": "npm run import:catalog --prefix warmrobot"
   }
 }

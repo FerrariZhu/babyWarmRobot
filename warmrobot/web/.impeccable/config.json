@@ -1,0 +1,20 @@
+{
+  "hook": {
+    "enabled": true
+  },
+  "detector": {
+    "designSystem": {
+      "enabled": true
+    },
+    "ignoreValues": [
+      {
+        "rule": "overused-font",
+        "value": "plus jakarta sans",
+        "reason": "Stitch brand font per DESIGN.md",
+        "createdAt": "2026-07-07T10:29:44.316Z"
+      }
+    ],
+    "ignoreRules": [],
+    "ignoreFiles": []
+  }
+}

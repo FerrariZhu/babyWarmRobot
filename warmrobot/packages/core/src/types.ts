@@ -1,0 +1,83 @@
+export type ActivityLevel = "low" | "medium" | "high";
+export type Scenario = "indoor" | "outdoor" | "sleep";
+export type TimeSlot = "morning" | "afternoon" | "evening" | "night";
+export type Variant = "default" | "warmer" | "cooler";
+
+export type ClothingCategory =
+  | "bodysuit_short"
+  | "bodysuit_long"
+  | "tshirt_short"
+  | "tshirt_long"
+  | "thermal_top"
+  | "sweater"
+  | "fleece_top"
+  | "vest"
+  | "outer_uv"
+  | "outer_shell"
+  | "outer_cotton"
+  | "outer_down"
+  | "long_johns"
+  | "pants_short"
+  | "pants_mid"
+  | "pants_long"
+  | "shoes_sandal"
+  | "shoes_sneaker"
+  | "shoes_leather"
+  | "shoes_boot"
+  | "hat"
+  | "scarf"
+  | "gloves"
+  | "socks"
+  | "other";
+
+export interface WeatherSnapshot {
+  temp: number;
+  feelsLike: number;
+  humidity: number;
+  windSpeed: number;
+  pressure: number;
+  text: string;
+  precipProbability?: number;
+  uvIndex?: number;
+}
+
+export interface BabyProfile {
+  id: string;
+  name: string;
+  birthDate: string;
+  activityLevel: ActivityLevel;
+  currentSizeLabel?: string | null;
+  warmthOffset?: number;
+}
+
+export interface WardrobeItem {
+  id: string;
+  name: string;
+  category: ClothingCategory;
+  warmthScore: number;
+  sizeLabel?: string | null;
+  imageUrl?: string | null;
+  isAvailable?: boolean;
+}
+
+export interface RecommendInput {
+  weather: WeatherSnapshot;
+  baby: BabyProfile;
+  wardrobe: WardrobeItem[];
+  scenario: Scenario;
+  timeSlot?: TimeSlot;
+  variant?: Variant;
+}
+
+export interface RecommendedPiece {
+  item: WardrobeItem;
+  layerOrder: number;
+}
+
+export interface RecommendResult {
+  requiredWarmth: number;
+  actualWarmth: number;
+  pieces: RecommendedPiece[];
+  reason: string;
+  variant: Variant;
+}
